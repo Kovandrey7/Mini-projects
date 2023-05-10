@@ -12,7 +12,7 @@ def create_db(conn):
         );
         
         CREATE TABLE IF NOT EXISTS client_phone(
-            client_id INTEGER NOT NULL REFERENCES client_info(client_id),
+            client_id INTEGER NOT NULL REFERENCES client_info(client_id) ON DELETE CASCADE,
             phone VARCHAR(20) UNIQUE NOT NULL
         );
         ''')
@@ -78,57 +78,30 @@ def add_phone(conn, client_id, phone):
 
 def change_client(conn, client_id, first_name=None, last_name=None, email=None):
     with conn.cursor() as cur:
+        cur.execute("""
+        SELECT first_name, last_name, email, client_id 
+        FROM client_info
+        WHERE client_id = %s;
+        """, (client_id,))
 
-        if first_name is not None and last_name is not None and email is None:
-            cur.execute('''
-            UPDATE client_info
-            SET first_name = %s, last_name = %s
-            WHERE client_id = %s;
-            ''', (first_name, last_name, client_id))
+        client_data = cur.fetchone()
+        if not client_data:
+            return "Такого пользователя нет"
+        if first_name is None:
+            first_name = client_data[0]
+        if last_name is None:
+            last_name = client_data[1]
+        if email is None:
+            email = client_data[2]
 
-        elif first_name is not None and last_name is None and email is None:
-            cur.execute('''
-            UPDATE client_info
-            SET first_name = %s
-            WHERE client_id = %s;
-            ''', (first_name, client_id))
-
-        elif first_name is None and last_name is not None and email is None:
-            cur.execute('''
-            UPDATE client_info
-            SET last_name = %s
-            WHERE client_id = %s;
-            ''', (last_name, client_id))
-
-        elif first_name is None and last_name is None and email is not None:
-            cur.execute('''
-            UPDATE client_info
-            SET email = %s
-            WHERE client_id = %s;
-            ''', (email, client_id))
-
-        elif first_name is not None and last_name is None and email is not None:
-            cur.execute('''
-            UPDATE client_info
-            SET first_name = %s, email = %s
-            WHERE client_id = %s;
-            ''', (first_name, email, client_id))
-
-        elif first_name is None and last_name is not None and email is not None:
-            cur.execute('''
-            UPDATE client_info
-            SET last_name = %s, email = %s
-            WHERE client_id = %s;
-            ''', (last_name, email, client_id))
-
-        else:
-            cur.execute('''
-            UPDATE client_info
-            SET first_name = %s, last_name = %s, email = %s
-            WHERE client_id = %s;
-            ''', (first_name, last_name, email, client_id))
+        cur.execute("""
+        UPDATE client_info
+        SET first_name = %s, last_name = %s, email = %s
+        WHERE client_id = %s
+        """, (first_name, last_name, email, client_id))
 
         conn.commit()
+    return print("Данные клиента успешно изменены")
 
 
 def delete_phone(conn, client_id, phone):
@@ -143,10 +116,7 @@ def delete_phone(conn, client_id, phone):
 
 def delete_client(conn, client_id):
     with conn.cursor() as cur:
-        cur.execute("""
-            DELETE FROM client_phone
-            WHERE client_id = %s;
-            
+        cur.execute("""         
             DELETE FROM client_info
             WHERE client_id = %s;         
         """, (client_id, client_id))
@@ -295,17 +265,17 @@ def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
 
 with psycopg2.connect(database="netology_db", user="postgres", password=input("Введите пароль: ")) as conn:
     # delete_tables(conn)
-    create_db(conn)
-    add_client(conn, "Vasia", "Pupkin", "VP@list.ru")
-    add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890")
-    add_client(conn, "Andrey", "Fedorov", "AF@list.ru", "+79874562321")
-    add_client(conn, "Peter", "Parker", "spider-man@list.ru", "+71236548789")
-    add_phone(conn, 1, "+79646546362")
-    add_phone(conn, 2, "+71112223334")
-    change_client(conn, 1, first_name="Nika", last_name="Koval", email="NK@list.ru")
-    change_client(conn, 1, last_name="Petrov", email="Petrov@list.ru")
+    # create_db(conn)
+    # add_client(conn, "Vasia", "Pupkin", "VP@list.ru")
+    # add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890")
+    # add_client(conn, "Andrey", "Fedorov", "AF@list.ru", "+79874562321")
+    # add_client(conn, "Peter", "Parker", "spider-man@list.ru", "+71236548789")
+    # add_phone(conn, 1, "+79646546362")
+    # add_phone(conn, 2, "+71112223334")
+    # change_client(conn, 1, first_name="Nika", last_name="Koval", email="NK@list.ru")
+    # change_client(conn, 1, last_name="Petrov", email="Petrov@list.ru")
     # delete_phone(conn, 2,"+71234567890")
     # delete_client(conn, 2)
-    find_client(conn, "Andrey")
-    find_client(conn, "Peter", "Parker", "spider-man@list.ru")
-    find_client(conn, "Andrey", "Koval", "AK@list.ru", "+71112223334")
+    # find_client(conn, "Andrey")
+    # find_client(conn, "Peter", "Parker", "spider-man@list.ru")
+    # find_client(conn, "Andrey", "Koval", "AK@list.ru", "+71112223334")
