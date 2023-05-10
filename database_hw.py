@@ -30,40 +30,23 @@ def delete_tables(conn):
 
 def add_client(conn, first_name, last_name, email, phone=None):
     with conn.cursor() as cur:
+        if find_client(conn, email=email):
+            return "Клиент с данным email уже существует"
 
-        if phone is None:
-            cur.execute("""
-                INSERT INTO client_info(first_name, last_name, email)
-                VALUES
-                    (%s, %s, %s) RETURNING client_id, first_name, last_name;
-                """, (first_name, last_name, email))
+        cur.execute("""
+            INSERT INTO client_info
+            VALUES
+                (%s, %s, %s) RETURNING client_id;
+        """, (first_name, last_name, email))
 
-            print(cur.fetchone())
-
-
-        else:
-            cur.execute("""
-                INSERT INTO client_info(first_name, last_name, email)
-                VALUES
-                    (%s, %s, %s) RETURNING client_id, first_name, last_name;
-                """, (first_name, last_name, email))
-
-            print(cur.fetchone())
-
-            cur.execute("""
-                SELECT client_id FROM client_info
-                WHERE email = %s;
-            """, (email,))
-            client_id = cur.fetchone()[0]
-
-            cur.execute("""
-                INSERT INTO client_phone(client_id, phone)
-                VALUES
-                    (%s, %s) RETURNING client_id, phone;
-            """, (client_id, phone))
-
-            print(cur.fetchone())
-
+        if phone is not None:
+            client_id = cur.fetchone()
+            add_client_phone = add_phone(conn, client_id=client_id, phone=phone)
+            if add_client_phone == "Данный номер есть в базе":
+                conn.rollback()
+                return "Невозможно добавить клиента"
+        conn.commit()
+        return "Клиент добавлен в базу"
 
 def add_phone(conn, client_id, phone):
     with conn.cursor() as cur:
