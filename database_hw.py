@@ -148,18 +148,160 @@ def delete_client(conn, client_id):
             WHERE client_id = %s;         
         """, (client_id, client_id))
 
+        conn.commit()
 
 def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
-    pass
+    with conn.cursor() as cur:
+        if first_name is not None and last_name is None and email is None and phone is None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name,))
+
+        elif first_name is None and last_name is not None and email is None and phone is None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.last_name = %s
+                ORDER BY ci.client_id ASC;
+            """, (last_name,))
+
+        elif first_name is None and last_name is None and email is not None and phone is None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.email = %s
+                ORDER BY ci.client_id ASC;
+            """, (email,))
+
+        elif first_name is None and last_name is None and email is None and phone is not None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (phone,))
+
+        elif first_name is not None and last_name is not None and email is None and phone is None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s and ci.last_name = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name, last_name))
+
+        elif first_name is not None and last_name is None and email is not None and phone is None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s and ci.email = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name, email))
+
+        elif first_name is not None and last_name is None and email is None and phone is not None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s and cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name, phone))
+
+        elif first_name is None and last_name is not None and email is not None and phone is None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.last_name = %s and ci.email = %s
+                ORDER BY ci.client_id ASC;
+            """, (last_name, email))
+
+        elif first_name is None and last_name is not None and email is None and phone is not None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.last_name = %s and cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (last_name, phone))
+
+        elif first_name is None and last_name is None and email is not None and phone is not None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.email = %s and cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (email, phone))
+
+        elif first_name is not None and last_name is not None and email is not None and phone is None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s and ci.last_name = %s and ci.email = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name, last_name, email))
+
+        elif first_name is not None and last_name is not None and email is None and phone is not None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s and ci.last_name = %s and cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name, last_name, phone))
+
+        elif first_name is not None and last_name is None and email is not None and phone is not None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s and ci.email = %s and cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name, email, phone))
+
+        elif first_name is None and last_name is not None and email is not None and phone is not None:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.last_name = %s and ci.email = %s and cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (last_name, email, phone))
+
+        else:
+            cur.execute("""
+                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
+                FROM client_info ci
+                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                WHERE ci.first_name = %s and ci.last_name = %s and ci.email = %s and cp.phone = %s
+                ORDER BY ci.client_id ASC;
+            """, (first_name ,last_name, email, phone))
+
+        print(cur.fetchall())
 
 
 with psycopg2.connect(database="netology_db", user="postgres", password=input("Введите пароль: ")) as conn:
     create_db(conn)
     add_client(conn, "Vasia", "Pupkin", "VP@list.ru")
     add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890")
+    add_client(conn, "Andrey", "Fedorov", "AF@list.ru", "+79874562321")
+    add_client(conn, "Peter", "Parker", "spider-man@list.ru", "+71236548789")
     add_phone(conn, 1, "+79646546362")
     add_phone(conn, 2, "+71112223334")
     change_client(conn, 1, first_name="Nika", last_name="Koval", email="NK@list.ru")
     change_client(conn, 1, last_name="Petrov", email="Petrov@list.ru")
-    delete_phone(conn, 2,"+71234567890")
-    delete_client(conn, 2)
+    # delete_phone(conn, 2,"+71234567890")
+    # delete_client(conn, 2)
+    find_client(conn, "Andrey")
+    find_client(conn, "Peter", "Parker", "spider-man@list.ru")
+    find_client(conn, "Andrey", "Koval", "AK@list.ru", "+71112223334")
