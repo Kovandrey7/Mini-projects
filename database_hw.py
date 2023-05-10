@@ -4,11 +4,6 @@ import psycopg2
 def create_db(conn):
     with conn.cursor() as cur:
         cur.execute('''
-        DROP TABLE client_phone;
-        DROP TABLE client_info;
-        ''')
-
-        cur.execute('''
         CREATE TABLE IF NOT EXISTS client_info(
             client_id SERIAL PRIMARY KEY,
             first_name VARCHAR(40) NOT NULL,
@@ -23,6 +18,14 @@ def create_db(conn):
         ''')
 
         conn.commit()
+
+
+def delete_tables(conn):
+    with conn.cursor() as cur:
+        cur.execute("""
+        DROP TABLE IF EXISTS client_phone;
+        DROP TABLE IF EXISTS client_info;
+        """)
 
 
 def add_client(conn, first_name, last_name, email, phone=None):
@@ -291,6 +294,7 @@ def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
 
 
 with psycopg2.connect(database="netology_db", user="postgres", password=input("Введите пароль: ")) as conn:
+    # delete_tables(conn)
     create_db(conn)
     add_client(conn, "Vasia", "Pupkin", "VP@list.ru")
     add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890")
