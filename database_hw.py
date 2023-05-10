@@ -125,140 +125,38 @@ def delete_client(conn, client_id):
 
 def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
     with conn.cursor() as cur:
-        if first_name is not None and last_name is None and email is None and phone is None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name,))
+        if first_name is None:
+            first_name = '%'
+        if last_name is None:
+            last_name = '%'
+        if email is None:
+            email = '%'
 
-        elif first_name is None and last_name is not None and email is None and phone is None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.last_name = %s
-                ORDER BY ci.client_id ASC;
-            """, (last_name,))
+        client_data = [first_name, last_name, email]
+        new_str = ''
 
-        elif first_name is None and last_name is None and email is not None and phone is None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.email = %s
-                ORDER BY ci.client_id ASC;
-            """, (email,))
+        if phone:
+            new_str =' AND cp.phone = %s::text'
+            client_data.append(phone)
 
-        elif first_name is None and last_name is None and email is None and phone is not None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (phone,))
-
-        elif first_name is not None and last_name is not None and email is None and phone is None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s and ci.last_name = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name, last_name))
-
-        elif first_name is not None and last_name is None and email is not None and phone is None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s and ci.email = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name, email))
-
-        elif first_name is not None and last_name is None and email is None and phone is not None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s and cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name, phone))
-
-        elif first_name is None and last_name is not None and email is not None and phone is None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.last_name = %s and ci.email = %s
-                ORDER BY ci.client_id ASC;
-            """, (last_name, email))
-
-        elif first_name is None and last_name is not None and email is None and phone is not None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.last_name = %s and cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (last_name, phone))
-
-        elif first_name is None and last_name is None and email is not None and phone is not None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.email = %s and cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (email, phone))
-
-        elif first_name is not None and last_name is not None and email is not None and phone is None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s and ci.last_name = %s and ci.email = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name, last_name, email))
-
-        elif first_name is not None and last_name is not None and email is None and phone is not None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s and ci.last_name = %s and cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name, last_name, phone))
-
-        elif first_name is not None and last_name is None and email is not None and phone is not None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s and ci.email = %s and cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name, email, phone))
-
-        elif first_name is None and last_name is not None and email is not None and phone is not None:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.last_name = %s and ci.email = %s and cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (last_name, email, phone))
-
-        else:
-            cur.execute("""
-                SELECT ci.client_id, ci.first_name, ci.last_name, ci.email, cp.phone 
-                FROM client_info ci
-                LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
-                WHERE ci.first_name = %s and ci.last_name = %s and ci.email = %s and cp.phone = %s
-                ORDER BY ci.client_id ASC;
-            """, (first_name ,last_name, email, phone))
+        my_requests = f"""
+                    SELECT 
+                        ci.email,
+                        ci.first_name,
+                        ci.last_name,
+                        CASE
+                            WHEN ARRAY_AGG(cp.phone) = '{{Null}}' THEN '{{}}'
+                            ELSE ARRAY_AGG(cp.phone)
+                        END 
+                    FROM client_info ci
+                    LEFT JOIN client_phone cp ON cp.client_id = ci.client_id
+                    WHERE first_name ILIKE %s AND last_name ILIKE %s AND email ILIKE %s{new_str}
+                    GROUP BY ci.email, ci.first_name, ci.last_name
+                    """
+        cur.execute(
+                    my_requests,
+                    client_data
+                )
 
         print(cur.fetchall())
 
