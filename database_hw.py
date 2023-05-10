@@ -13,7 +13,7 @@ def create_db(conn):
         
         CREATE TABLE IF NOT EXISTS client_phone(
             client_id INTEGER NOT NULL REFERENCES client_info(client_id) ON DELETE CASCADE,
-            phone VARCHAR(20) UNIQUE NOT NULL
+            phone VARCHAR(20) NOT NULL
         );
         ''')
 
@@ -67,13 +67,25 @@ def add_client(conn, first_name, last_name, email, phone=None):
 
 def add_phone(conn, client_id, phone):
     with conn.cursor() as cur:
+        if find_client(conn, phone=phone):
+            return "Данный номер есть в базе"
+
+        cur.execute("""
+            SELECT * FROM client_info ci
+            WHERE client_id = %s;
+        """, (client_id,))
+
+        if not cur.fetchone():
+            return "Такого клиента нет в базе"
+
         cur.execute("""
             INSERT INTO client_phone
             VALUES
-                (%s, %s) RETURNING client_id, phone;
+                (%s, %s);
         """, (client_id, phone))
 
-        print(cur.fetchone())
+        conn.commit()
+        return "Телефон успешно добавлен"
 
 
 def change_client(conn, client_id, first_name=None, last_name=None, email=None):
@@ -158,18 +170,20 @@ def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
                     client_data
                 )
 
-        print(cur.fetchall())
+        return cur.fetchall()
 
 
 with psycopg2.connect(database="netology_db", user="postgres", password=input("Введите пароль: ")) as conn:
-    # delete_tables(conn)
-    # create_db(conn)
-    # add_client(conn, "Vasia", "Pupkin", "VP@list.ru")
-    # add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890")
-    # add_client(conn, "Andrey", "Fedorov", "AF@list.ru", "+79874562321")
-    # add_client(conn, "Peter", "Parker", "spider-man@list.ru", "+71236548789")
-    # add_phone(conn, 1, "+79646546362")
-    # add_phone(conn, 2, "+71112223334")
+    delete_tables(conn)
+    create_db(conn)
+    add_client(conn, "Vasia", "Pupkin", "VP@list.ru")
+    add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890")
+    add_client(conn, "Andrey", "Fedorov", "AF@list.ru", "+79874562321")
+    add_client(conn, "Peter", "Parker", "spider-man@list.ru", "+71236548789")
+    print(add_phone(conn, 1, "+79646546362"))
+    print(add_phone(conn, 2, "+71112223334"))
+    print(add_phone(conn, 1, "+79646546362"))
+    print(add_phone(conn, 5, "+74567891223"))
     # change_client(conn, 1, first_name="Nika", last_name="Koval", email="NK@list.ru")
     # change_client(conn, 1, last_name="Petrov", email="Petrov@list.ru")
     # delete_phone(conn, 2,"+71234567890")
