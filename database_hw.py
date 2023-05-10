@@ -34,7 +34,7 @@ def add_client(conn, first_name, last_name, email, phone=None):
             return "Клиент с данным email уже существует"
 
         cur.execute("""
-            INSERT INTO client_info
+            INSERT INTO client_info(first_name, last_name, email)
             VALUES
                 (%s, %s, %s) RETURNING client_id;
         """, (first_name, last_name, email))
@@ -47,6 +47,7 @@ def add_client(conn, first_name, last_name, email, phone=None):
                 return "Невозможно добавить клиента"
         conn.commit()
         return "Клиент добавлен в базу"
+
 
 def add_phone(conn, client_id, phone):
     with conn.cursor() as cur:
@@ -96,7 +97,7 @@ def change_client(conn, client_id, first_name=None, last_name=None, email=None):
         """, (first_name, last_name, email, client_id))
 
         conn.commit()
-    return print("Данные клиента успешно изменены")
+    return "Данные клиента успешно изменены"
 
 
 def delete_phone(conn, client_id, phone):
@@ -107,6 +108,7 @@ def delete_phone(conn, client_id, phone):
         """, (client_id, phone))
 
         conn.commit()
+        return "Телефон успешно удален из базы"
 
 
 def delete_client(conn, client_id):
@@ -114,9 +116,10 @@ def delete_client(conn, client_id):
         cur.execute("""         
             DELETE FROM client_info
             WHERE client_id = %s;         
-        """, (client_id, client_id))
+        """, (client_id,))
 
         conn.commit()
+        return "Клиент успешно удален из базы"
 
 def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
     with conn.cursor() as cur:
@@ -159,18 +162,19 @@ def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
 with psycopg2.connect(database="netology_db", user="postgres", password=input("Введите пароль: ")) as conn:
     delete_tables(conn)
     create_db(conn)
-    add_client(conn, "Vasia", "Pupkin", "VP@list.ru")
-    add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890")
-    add_client(conn, "Andrey", "Fedorov", "AF@list.ru", "+79874562321")
-    add_client(conn, "Peter", "Parker", "spider-man@list.ru", "+71236548789")
+    print(add_client(conn, "Vasia", "Pupkin", "VP@list.ru"))
+    print(add_client(conn, "Andrey", "Koval", "AK@list.ru", "+71234567890"))
+    print(add_client(conn, "Andrey", "Fedorov", "AF@list.ru", "+79874562321"))
+    print(add_client(conn, "Petya", "Fomin", "VP@list.ru"))
+    print(add_client(conn, "Peter", "Parker", "spider-man@list.ru", "+71236548789"))
     print(add_phone(conn, 1, "+79646546362"))
     print(add_phone(conn, 2, "+71112223334"))
     print(add_phone(conn, 1, "+79646546362"))
     print(add_phone(conn, 5, "+74567891223"))
-    # change_client(conn, 1, first_name="Nika", last_name="Koval", email="NK@list.ru")
-    # change_client(conn, 1, last_name="Petrov", email="Petrov@list.ru")
-    # delete_phone(conn, 2,"+71234567890")
-    # delete_client(conn, 2)
-    # find_client(conn, "Andrey")
-    # find_client(conn, "Peter", "Parker", "spider-man@list.ru")
-    # find_client(conn, "Andrey", "Koval", "AK@list.ru", "+71112223334")
+    print(change_client(conn, 1, first_name="Nika", last_name="Koval", email="NK@list.ru"))
+    print(change_client(conn, 1, last_name="Petrov", email="Petrov@list.ru"))
+    print(delete_phone(conn, 2,"+71234567890"))
+    print(delete_client(conn, 2))
+    print(find_client(conn, "Andrey"))
+    print(find_client(conn, "Peter", "Parker", "spider-man@list.ru"))
+    print(find_client(conn, "Andrey", "Koval", "AK@list.ru", "+71112223334"))
